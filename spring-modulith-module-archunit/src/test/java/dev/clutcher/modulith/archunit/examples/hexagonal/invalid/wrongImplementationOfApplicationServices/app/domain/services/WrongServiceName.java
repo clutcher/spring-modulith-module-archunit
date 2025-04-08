@@ -1,0 +1,6 @@
+package dev.clutcher.modulith.archunit.examples.hexagonal.invalid.wrongImplementationOfApplicationServices.app.domain.services;
+
+import dev.clutcher.modulith.archunit.examples.hexagonal.invalid.wrongImplementationOfApplicationServices.app.api.ApiForResolvingModuleAsHexagonalArchitecture;
+
+public class WrongServiceName implements ApiForResolvingModuleAsHexagonalArchitecture {
+}

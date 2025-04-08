@@ -1,0 +1,6 @@
+package dev.clutcher.modulith.archunit.examples.hexagonal.invalid.wrongImplementationOfDrivenAdapter.out;
+
+import dev.clutcher.modulith.archunit.examples.hexagonal.invalid.wrongImplementationOfDrivenAdapter.app.spi.SpiForResolvingModuleAsHexagonalArchitecture;
+
+public class WrongDrivenAdapterName implements SpiForResolvingModuleAsHexagonalArchitecture {
+}
