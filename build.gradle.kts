@@ -10,13 +10,13 @@ plugins {
     id("org.jreleaser") version "1.19.0"
 }
 
-extra["springModulithVersion"] = "1.4.1"
-extra["springBootVersion"] = "3.5.3"
+extra["springModulithVersion"] = "2.0.3"
+extra["springBootVersion"] = "4.0.2"
 extra["archUnitVersion"] = "1.4.1"
 
 allprojects {
     group = "dev.clutcher.modulith"
-    version = "1.0.1"
+    version = "2.0.0"
 }
 
 configureJReleaser()
@@ -44,6 +44,7 @@ subprojects {
 
     dependencies {
         testImplementation("org.junit.jupiter:junit-jupiter")
+        testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     }
 
     dependencyManagement {
@@ -55,9 +56,11 @@ subprojects {
 
     configurePublishing()
 
-    signing {
-        useGpgCmd()
-        sign(publishing.publications["default"])
+    if (project.hasProperty("sign")) {
+        signing {
+            useGpgCmd()
+            sign(publishing.publications["default"])
+        }
     }
 
     tasks.test {

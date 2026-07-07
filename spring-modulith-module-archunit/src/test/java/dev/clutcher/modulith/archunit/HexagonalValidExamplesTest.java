@@ -1,7 +1,10 @@
 package dev.clutcher.modulith.archunit;
 
 import com.tngtech.archunit.core.importer.ImportOption;
+import dev.clutcher.modulith.archunit.rules.app.domain.services.ArchRuleRegistry;
 import dev.clutcher.modulith.archunit.rules.app.domain.services.HexagonalArchRuleCreationService;
+import dev.clutcher.modulith.archunit.rules.app.domain.services.library.CodeConventionsRulesLibrary;
+import dev.clutcher.modulith.archunit.rules.app.domain.services.library.HexagonalArchitectureRulesLibrary;
 import dev.clutcher.modulith.archunit.rules.out.spring.HexagonalPackageSettingsUsingSpringProperties;
 import dev.clutcher.modulith.archunit.verifier.app.domain.services.ModuleArchitectureVerificationService;
 import org.junit.jupiter.api.Test;
@@ -23,8 +26,13 @@ public class HexagonalValidExamplesTest {
                 importOption
         );
 
+        HexagonalPackageSettingsUsingSpringProperties settings = new HexagonalPackageSettingsUsingSpringProperties();
+        ArchRuleRegistry registry = new ArchRuleRegistry(ruleId -> true);
+        HexagonalArchitectureRulesLibrary.allRules().forEach(registry::register);
+        CodeConventionsRulesLibrary.allRules().forEach(registry::register);
+
         ModuleArchitectureVerificationService modulesArchitectureVerifier = new ModuleArchitectureVerificationService(
-                List.of(new HexagonalArchRuleCreationService(new HexagonalPackageSettingsUsingSpringProperties())),
+                List.of(new HexagonalArchRuleCreationService(settings, registry)),
                 importOption
         );
 
@@ -32,7 +40,6 @@ public class HexagonalValidExamplesTest {
         modulesArchitectureVerifier.verifyAllModules(applicationModules);
 
         // then
-        // No violation exceptions should be thrown.
     }
 
 }

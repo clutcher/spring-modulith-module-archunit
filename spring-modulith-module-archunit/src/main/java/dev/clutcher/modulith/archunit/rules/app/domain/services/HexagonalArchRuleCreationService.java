@@ -2,9 +2,8 @@ package dev.clutcher.modulith.archunit.rules.app.domain.services;
 
 import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.lang.ArchRule;
-import com.tngtech.archunit.lang.CompositeArchRule;
 import dev.clutcher.modulith.archunit.rules.app.api.ApiForArchRuleCreation;
-import dev.clutcher.modulith.archunit.rules.app.domain.services.library.HexagonalArchitectureRulesLibrary;
+import dev.clutcher.modulith.archunit.rules.app.domain.model.RuleGroup;
 import dev.clutcher.modulith.archunit.rules.app.spi.HexagonalArchitectureSettings;
 import org.springframework.modulith.core.ApplicationModule;
 
@@ -12,10 +11,12 @@ import static com.tngtech.archunit.core.domain.JavaClass.Predicates.resideInAPac
 
 public class HexagonalArchRuleCreationService implements ApiForArchRuleCreation {
 
-    private HexagonalArchitectureSettings properties;
+    private final HexagonalArchitectureSettings properties;
+    private final ArchRuleRegistry registry;
 
-    public HexagonalArchRuleCreationService(HexagonalArchitectureSettings properties) {
+    public HexagonalArchRuleCreationService(HexagonalArchitectureSettings properties, ArchRuleRegistry registry) {
         this.properties = properties;
+        this.registry = registry;
     }
 
     @Override
@@ -29,27 +30,22 @@ public class HexagonalArchRuleCreationService implements ApiForArchRuleCreation 
 
     @Override
     public ArchRule createLayerRule(ApplicationModule module) {
-        String moduleBasePackage = module.getBasePackage().getName();
-        return HexagonalArchitectureRulesLibrary.createLayerDefinitionRule(moduleBasePackage, properties);
+        return registry.buildGroupRule(RuleGroup.LAYER, module.getBasePackage().getName(), properties);
     }
 
     @Override
     public ArchRule createPackageStructureRule(ApplicationModule applicationModule) {
-        String moduleBasePackage = applicationModule.getBasePackage().getName();
-        return CompositeArchRule
-                .of(HexagonalArchitectureRulesLibrary.ruleForModuleRootPackageStructure(moduleBasePackage, properties))
-                .and(HexagonalArchitectureRulesLibrary.ruleForApplicationPortsPackageStructure(moduleBasePackage, properties))
-                .and(HexagonalArchitectureRulesLibrary.ruleForAdaptersPackageStructure(moduleBasePackage, properties));
+        return registry.buildGroupRule(RuleGroup.PACKAGE_STRUCTURE, applicationModule.getBasePackage().getName(), properties);
     }
 
     @Override
     public ArchRule createDevStandardsRule(ApplicationModule applicationModule) {
-        String moduleBasePackage = applicationModule.getBasePackage().getName();
-        return CompositeArchRule
-                .of(HexagonalArchitectureRulesLibrary.ruleForApplicationServices(moduleBasePackage, properties))
-                .and(HexagonalArchitectureRulesLibrary.ruleForDrivingPorts(moduleBasePackage, properties))
-                .and(HexagonalArchitectureRulesLibrary.ruleForDrivenPorts(moduleBasePackage, properties))
-                .and(HexagonalArchitectureRulesLibrary.ruleForDrivenAdapters(moduleBasePackage, properties));
+        return registry.buildGroupRule(RuleGroup.DEV_STANDARDS, applicationModule.getBasePackage().getName(), properties);
+    }
+
+    @Override
+    public ArchRule createCodeConventionsRule(ApplicationModule applicationModule) {
+        return registry.buildGroupRule(RuleGroup.CODE_CONVENTIONS, applicationModule.getBasePackage().getName(), properties);
     }
 
 }

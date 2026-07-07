@@ -4,7 +4,6 @@ package dev.clutcher.modulith.archunit.verifier.app.domain.services;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.core.importer.ImportOption;
-import com.tngtech.archunit.lang.ArchRule;
 import dev.clutcher.modulith.archunit.rules.app.api.ApiForArchRuleCreation;
 import dev.clutcher.modulith.archunit.verifier.app.api.ApiForModuleArchitectureVerification;
 import org.springframework.modulith.core.ApplicationModule;
@@ -13,6 +12,8 @@ import org.springframework.modulith.core.DependencyDepth;
 import org.springframework.modulith.core.JavaPackage;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 public class ModuleArchitectureVerificationService implements ApiForModuleArchitectureVerification {
 
@@ -62,20 +63,14 @@ public class ModuleArchitectureVerificationService implements ApiForModuleArchit
             ApplicationModule module,
             JavaClasses allClassesRelatedToModule
     ) {
-        ArchRule packageStructureRule = apiForArchRuleCreation.createPackageStructureRule(module);
-        if (packageStructureRule != null) {
-            packageStructureRule.check(allClassesRelatedToModule);
-        }
-
-        ArchRule layerRule = apiForArchRuleCreation.createLayerRule(module);
-        if (layerRule != null) {
-            layerRule.check(allClassesRelatedToModule);
-        }
-
-        ArchRule devStandardsRule = apiForArchRuleCreation.createDevStandardsRule(module);
-        if (devStandardsRule != null) {
-            devStandardsRule.check(allClassesRelatedToModule);
-        }
+        Stream.of(
+                apiForArchRuleCreation.createPackageStructureRule(module),
+                apiForArchRuleCreation.createLayerRule(module),
+                apiForArchRuleCreation.createDevStandardsRule(module),
+                apiForArchRuleCreation.createCodeConventionsRule(module)
+        )
+                .filter(Objects::nonNull)
+                .forEach(rule -> rule.check(allClassesRelatedToModule));
     }
 
     protected JavaClasses getModuleRelatedJavaClasses(

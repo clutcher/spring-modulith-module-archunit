@@ -7,8 +7,9 @@ public class OrderSearchController {
 
     private ApiForOrderSearch apiForOrderSearch;
 
-    public Order searchOrders(String requestParameter) {
-        return apiForOrderSearch.findOrder(requestParameter);
+    public OrderSearchResponse searchOrders(String requestParameter) {
+        Order order = apiForOrderSearch.findOrder(requestParameter);
+        return new OrderSearchResponse(order.id);
     }
 
 }

@@ -14,4 +14,6 @@ public interface ApiForArchRuleCreation {
 
     ArchRule createDevStandardsRule(ApplicationModule applicationModule);
 
+    ArchRule createCodeConventionsRule(ApplicationModule applicationModule);
+
 }

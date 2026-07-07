@@ -2,11 +2,43 @@ package dev.clutcher.modulith.archunit.rules.out.spring;
 
 import dev.clutcher.modulith.archunit.rules.app.spi.HexagonalArchitectureSettings;
 
+import java.util.List;
+
 public class HexagonalPackageSettingsUsingSpringProperties implements HexagonalArchitectureSettings {
 
     private Port port = new Port();
     private Adapter adapter = new Adapter();
     private Application application = new Application();
+    private List<String> generatedClassAnnotations;
+    private List<String> controllerAnnotations;
+
+    public List<String> getGeneratedClassAnnotationsList() {
+        return generatedClassAnnotations;
+    }
+
+    public void setGeneratedClassAnnotations(List<String> generatedClassAnnotations) {
+        this.generatedClassAnnotations = generatedClassAnnotations;
+    }
+
+    @Override
+    public String[] getGeneratedClassAnnotations() {
+        if (generatedClassAnnotations == null) {
+            return new String[0];
+        }
+        return generatedClassAnnotations.toArray(new String[0]);
+    }
+
+    public void setControllerAnnotations(List<String> controllerAnnotations) {
+        this.controllerAnnotations = controllerAnnotations;
+    }
+
+    @Override
+    public String[] getControllerAnnotations() {
+        if (controllerAnnotations == null || controllerAnnotations.isEmpty()) {
+            return HexagonalArchitectureSettings.super.getControllerAnnotations();
+        }
+        return controllerAnnotations.toArray(new String[0]);
+    }
 
     public static class Port {
         private String driving = ".api..";

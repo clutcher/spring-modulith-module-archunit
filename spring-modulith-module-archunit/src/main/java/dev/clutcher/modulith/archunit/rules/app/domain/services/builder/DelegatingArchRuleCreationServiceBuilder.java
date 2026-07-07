@@ -12,12 +12,14 @@ public class DelegatingArchRuleCreationServiceBuilder implements ApiForCustomizi
     private RuleProvider layerRuleProvider;
     private RuleProvider packageRuleProvider;
     private RuleProvider devStandardsRuleProvider;
+    private RuleProvider codeConventionsRuleProvider;
 
     public DelegatingArchRuleCreationServiceBuilder(ApiForArchRuleCreation apiForArchRuleCreation) {
         this.ruleApplicabilityChecker = apiForArchRuleCreation::isApplicable;
         this.layerRuleProvider = apiForArchRuleCreation::createLayerRule;
         this.packageRuleProvider = apiForArchRuleCreation::createPackageStructureRule;
         this.devStandardsRuleProvider = apiForArchRuleCreation::createDevStandardsRule;
+        this.codeConventionsRuleProvider = apiForArchRuleCreation::createCodeConventionsRule;
     }
 
     public DelegatingArchRuleCreationServiceBuilder(RuleApplicabilityChecker ruleApplicabilityChecker) {
@@ -25,6 +27,7 @@ public class DelegatingArchRuleCreationServiceBuilder implements ApiForCustomizi
         this.layerRuleProvider = (module) -> null;
         this.packageRuleProvider = (module) -> null;
         this.devStandardsRuleProvider = (module) -> null;
+        this.codeConventionsRuleProvider = (module) -> null;
     }
 
     @Override
@@ -76,12 +79,25 @@ public class DelegatingArchRuleCreationServiceBuilder implements ApiForCustomizi
     }
 
     @Override
+    public ApiForCustomizingArchRuleCreation withCodeConventionsRule(ApiForArchRuleCreation apiForArchRuleCreation) {
+        this.codeConventionsRuleProvider = apiForArchRuleCreation::createCodeConventionsRule;
+        return this;
+    }
+
+    @Override
+    public ApiForCustomizingArchRuleCreation withCodeConventionsRule(RuleProvider provider) {
+        this.codeConventionsRuleProvider = provider;
+        return this;
+    }
+
+    @Override
     public ApiForArchRuleCreation create() {
         return new DelegatingArchRuleCreationService(
                 this.ruleApplicabilityChecker,
                 this.layerRuleProvider,
                 this.packageRuleProvider,
-                this.devStandardsRuleProvider
+                this.devStandardsRuleProvider,
+                this.codeConventionsRuleProvider
         );
     }
 }

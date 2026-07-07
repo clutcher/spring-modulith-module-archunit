@@ -30,6 +30,10 @@ public interface ApiForCustomizingArchRuleCreation {
 
     ApiForCustomizingArchRuleCreation withDevStandardsRule(RuleProvider provider);
 
+    ApiForCustomizingArchRuleCreation withCodeConventionsRule(ApiForArchRuleCreation apiForArchRuleCreation);
+
+    ApiForCustomizingArchRuleCreation withCodeConventionsRule(RuleProvider provider);
+
     ApiForArchRuleCreation create();
 
 }

@@ -13,17 +13,20 @@ public class DelegatingArchRuleCreationService implements ApiForArchRuleCreation
     private final RuleProvider layerRuleProvider;
     private final RuleProvider packageRuleProvider;
     private final RuleProvider devStandardsRuleProvider;
+    private final RuleProvider codeConventionsRuleProvider;
 
     public DelegatingArchRuleCreationService(
             RuleApplicabilityChecker ruleApplicabilityChecker,
             RuleProvider layerRuleProvider,
             RuleProvider packageRuleProvider,
-            RuleProvider devStandardsRuleProvider
+            RuleProvider devStandardsRuleProvider,
+            RuleProvider codeConventionsRuleProvider
     ) {
         this.ruleApplicabilityChecker = ruleApplicabilityChecker;
         this.layerRuleProvider = layerRuleProvider;
         this.packageRuleProvider = packageRuleProvider;
         this.devStandardsRuleProvider = devStandardsRuleProvider;
+        this.codeConventionsRuleProvider = codeConventionsRuleProvider;
     }
 
     @Override
@@ -44,6 +47,11 @@ public class DelegatingArchRuleCreationService implements ApiForArchRuleCreation
     @Override
     public ArchRule createDevStandardsRule(ApplicationModule applicationModule) {
         return devStandardsRuleProvider.provide(applicationModule);
+    }
+
+    @Override
+    public ArchRule createCodeConventionsRule(ApplicationModule applicationModule) {
+        return codeConventionsRuleProvider.provide(applicationModule);
     }
 
 }

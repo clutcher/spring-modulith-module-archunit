@@ -11,13 +11,16 @@ A utility library for enforcing architectural standards within Spring Modulith m
 3. [Getting Started](#getting-started)
     - [Installation](#installation)
     - [Basic Usage](#basic-usage)
-4. [Default Rules for Hexagonal Architecture](#default-rules-for-hexagonal-architecture)
+4. [Rule Groups](#rule-groups)
+5. [Default Rules for Hexagonal Architecture](#default-rules-for-hexagonal-architecture)
     - [Package Structure](#package-structure)
     - [Layers Structure](#layers-structure)
     - [Layer Dependency Rules](#layer-dependency-rules)
-    - [Additional Development Standards](#additional-development-standards)
+    - [Development Standards](#development-standards)
+    - [Code Conventions](#code-conventions)
     - [Configuring Default Rules](#configuring-default-rules)
-5. [Implementation Details](#implementation-details)
+    - [Toggling Individual Rules](#toggling-individual-rules)
+6. [Implementation Details](#implementation-details)
 
 ---
 
@@ -54,8 +57,8 @@ Add the following dependencies to your project. These libraries require **Java 1
 
 ``` gradle
 dependencies {
-    testImplementation("dev.clutcher:spring-modulith-module-archunit:1.0.0")
-    testImplementation("dev.clutcher:spring-modulith-module-archunit-starter:1.0.0")
+    testImplementation("dev.clutcher:spring-modulith-module-archunit:2.0.0")
+    testImplementation("dev.clutcher:spring-modulith-module-archunit-starter:2.0.0")
 }
 ```
 
@@ -67,13 +70,13 @@ dependencies {
     <dependency>
         <groupId>dev.clutcher</groupId>
         <artifactId>spring-modulith-module-archunit</artifactId>
-        <version>1.0.0</version>
+        <version>2.0.0</version>
         <scope>test</scope>
     </dependency>
     <dependency>
         <groupId>dev.clutcher</groupId>
         <artifactId>spring-modulith-module-archunit-starter</artifactId>
-        <version>1.0.0</version>
+        <version>2.0.0</version>
         <scope>test</scope>
     </dependency>
 </dependencies>
@@ -139,6 +142,19 @@ public class ModuleArchitectureRulesConfiguration {
     }
 }
 ```
+
+---
+
+## Rule Groups
+
+Rules are organized into four groups, each independently toggleable:
+
+| Group | Purpose | Library |
+|---|---|---|
+| `LAYER` | Layer dependency enforcement (which layers may access which) | `HexagonalArchitectureRulesLibrary` |
+| `PACKAGE_STRUCTURE` | Valid package placement within modules | `HexagonalArchitectureRulesLibrary` |
+| `DEV_STANDARDS` | Hexagonal architecture component contracts — structural rules for ports, adapters, services, and domain model types | `HexagonalArchitectureRulesLibrary` |
+| `CODE_CONVENTIONS` | Universal coding standards (naming, annotations) applicable to any architecture | `CodeConventionsRulesLibrary` |
 
 ---
 
@@ -214,24 +230,42 @@ The library enforces strict layer dependency rules to ensure clean separation of
     - Spring Modulith verify checks will ensure that module boundaries are not violated.
     - To use **Driving Ports** in other submodules define it as Named Interface with `package-info.java`
 
-### Additional Development Standards
+### Development Standards
 
-- Driving Ports (API)
+Rules enforcing hexagonal architecture component contracts:
+
+- **Driving Ports (API)**
     - Must be interfaces
     - Names must start with `ApiFor`
     - `package-info` class is ignored
-- Driven Ports (SPI)
+- **Driven Ports (SPI)**
     - Must be interfaces
-- Application Services
+- **Application Services**
     - Must be concrete classes (not interfaces)
     - Implements a Driving Port interface
-    - Names must end with either:
-        - `Service`
-        - `ServiceBuilder`
-        - `ServiceFactory`
-- Driven Adapters (OUT)
+    - Names must end with `Service`, `ServiceBuilder`, or `ServiceFactory`
+- **Driven Adapters (OUT)**
     - Implements a Driven Port interface
     - Names must contain the word `Using` (e.g., `RepositoryUsingJPA`)
+- **Domain Model**
+    - Not exposed as return types in controller classes (REST, GraphQL)
+    - Only records, enums, or POJOs (concrete classes with instance fields) are allowed
+    - Domain model can only depend on: itself, `java.*`, `lombok.*`, `@Component`, `@Service`, `slf4j`
+    - Domain model classes within a module can reference each other
+
+### Code Conventions
+
+Universal coding standards applicable to any architecture:
+
+| Rule ID | Description |
+|---|---|
+| `no-dto-in-class-names` | Domain classes must not contain 'DTO'/'Dto' (case-insensitive) or end with 'Data' |
+| `no-impl-postfix` | Classes must not end with 'Impl' (excludes generated classes) |
+| `logger-field-naming` | SLF4J Logger fields must be named `LOGGER` |
+| `spring-adapter-naming` | Classes in `in.spring` package must end with 'Adapter' |
+| `spring-adapter-public-parameter-types` | Public method parameters in Spring adapters must start with 'Public' |
+| `mapper-annotated-with-generated` | `@Mapper` classes must have `@AnnotateWith(Generated.class)` |
+| `api-method-parameter-type-naming` | Parameter type naming: `search`/`find` → `*Criteria`, `create` → `*Attributes`, `remove`/`delete` → `*Parameters` |
 
 ### Configuring Default Rules
 
@@ -249,6 +283,26 @@ dev.clutcher.modulith.archunit.rules.hexagonal.package.application.configuration
 
 Value of `application.root` is automatically added to `port.driving`, `port.driven`, `application.services` to ensure that package structure after properties changes does not violate hexagonal architecture.
 
+#### Controller Annotations
+
+By default, the library checks `@RestController` and `@Controller` for the domain-model-not-exposed rule. To add custom controller annotations (e.g., Netflix DGS):
+
+```properties
+dev.clutcher.modulith.archunit.rules.hexagonal.package.controller-annotations=\
+  org.springframework.web.bind.annotation.RestController,\
+  org.springframework.stereotype.Controller,\
+  com.netflix.graphql.dgs.DgsComponent
+```
+
+### Toggling Individual Rules
+
+Any rule can be disabled via Spring properties using the rule ID:
+
+```properties
+dev.clutcher.modulith.archunit.rules.toggle.no-dto-in-class-names=false
+dev.clutcher.modulith.archunit.rules.toggle.domain-model-only-records-or-pojos=false
+dev.clutcher.modulith.archunit.rules.toggle.logger-field-naming=false
+```
 
 ---
 
@@ -261,7 +315,8 @@ Value of `application.root` is automatically added to `port.driving`, `port.driv
     - `ApiForCustomizingArchRuleCreation` - Main entry point for customizing existing instances of `ApiForArchRuleCreation` using `DelegatingArchRuleCreationService`
     - `HexagonalArchRuleCreationService` - Service for creating hexagonal architecture rule sets
     - `DelegatingArchRuleCreationService` - Service implementation to be used for custom rules creation
-    - `HexagonalArchitectureRulesLibrary` - Library of predefined rules for hexagonal architecture
+    - `HexagonalArchitectureRulesLibrary` - Library of predefined rules for hexagonal architecture (LAYER, PACKAGE_STRUCTURE, DEV_STANDARDS)
+    - `CodeConventionsRulesLibrary` - Library of universal code convention rules (CODE_CONVENTIONS)
 2. **Architecture Rule Verification**:
     - `ApiForModuleArchitectureVerification` - Main entry point to verify module architecture
     - `ModuleArchitectureVerificationService` - Service implementation for verifying module architecture
