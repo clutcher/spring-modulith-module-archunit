@@ -54,8 +54,8 @@ Add the following dependencies to your project. These libraries require **Java 1
 
 ``` gradle
 dependencies {
-    testImplementation("dev.clutcher:spring-modulith-module-archunit:1.0.0")
-    testImplementation("dev.clutcher:spring-modulith-module-archunit-starter:1.0.0")
+    testImplementation("dev.clutcher.modulith:spring-modulith-module-archunit:1.0.1")
+    testImplementation("dev.clutcher.modulith:spring-modulith-module-archunit-starter:1.0.1")
 }
 ```
 
@@ -65,15 +65,15 @@ dependencies {
 
 <dependencies>
     <dependency>
-        <groupId>dev.clutcher</groupId>
+        <groupId>dev.clutcher.modulith</groupId>
         <artifactId>spring-modulith-module-archunit</artifactId>
-        <version>1.0.0</version>
+        <version>1.0.1</version>
         <scope>test</scope>
     </dependency>
     <dependency>
-        <groupId>dev.clutcher</groupId>
+        <groupId>dev.clutcher.modulith</groupId>
         <artifactId>spring-modulith-module-archunit-starter</artifactId>
-        <version>1.0.0</version>
+        <version>1.0.1</version>
         <scope>test</scope>
     </dependency>
 </dependencies>
