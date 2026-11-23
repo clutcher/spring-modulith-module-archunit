@@ -7,6 +7,7 @@ A utility library for enforcing architectural standards within Spring Modulith m
 ## Table of Contents
 
 1. [Overview](#overview)
+    - [Design Background](#design-background)
 2. [Project Structure](#project-structure)
 3. [Getting Started](#getting-started)
     - [Installation](#installation)
@@ -30,6 +31,10 @@ The **Spring Modulith Module ArchUnit** library is purpose-built to address this
 - A set of predefined ArchUnit rules for hexagonal architecture.
 - Flexible customization for hexagonal or other architectures.
 - Seamless integration with Spring Modulith's module verification capabilities.
+
+### Design Background
+
+The library enforces the module boundaries of a modular monolith whose modules follow hexagonal architecture. Spring Modulith checks the dependencies between modules, and the rules of this library check the ports, adapters and services inside each module, so that a module keeps its internals hidden behind its ports. The author develops this idea of encapsulation in his book [Laminar Software Design: Foundations of High-Quality Code](https://clutcher.dev/book/laminar-software-design/).
 
 ---
 
